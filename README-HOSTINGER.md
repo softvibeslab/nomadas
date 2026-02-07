@@ -8,8 +8,11 @@ Rama: `hostinger-deploy` - Adaptación para Hostinger Cloud Hosting
 |---------|-----------|
 | `.htaccess` | Configuración de Apache para Node.js |
 | `hostinger.json` | Configuración de la app para Hostinger |
-| `hostinger.env.template` | Plantilla de variables de entorno |
+| `hostinger.env.template` | Plantilla de variables de entorno (Supabase + Upstash) |
 | `hostinger-build.sh` | Script de build para producción |
+| `scripts/test-connections.js` | Script para probar conexiones |
+| `docs/SUPABASE_SETUP.md` | Guía completa de Supabase |
+| `docs/UPSTASH_SETUP.md` | Guía completa de Upstash |
 | `README-HOSTINGER.md` | Esta documentación |
 
 ## Limitaciones Conocidas
@@ -17,15 +20,76 @@ Rama: `hostinger-deploy` - Adaptación para Hostinger Cloud Hosting
 | Característica | Estado | Nota |
 |----------------|--------|------|
 | REST API | ✅ Funcional | 100% de los endpoints |
-| PostgreSQL | ✅ Funcional | Requiere servicio adicional de Hostinger |
-| Redis | ✅ Funcional | Requiere Upstash (gratis) o servicio externo |
+| PostgreSQL (Supabase) | ✅ Funcional | Gratis hasta 500MB |
+| Redis (Upstash) | ✅ Funcional | Gratis hasta 10K comandos/día |
 | S3/AWS | ✅ Funcional | Configura tus credenciales AWS |
 | Socket.io/WebSocket | ❌ NO Soportado | Mensajería en tiempo real no funciona |
 | OpenSearch | ⚠️ Opcional | Deshabilítalo si no lo necesitas |
 
 ---
 
-## Paso 1: Preparación Local
+## Servicios Externos Requeridos
+
+Este deployment utiliza servicios gratuitos para base de datos y caché:
+
+| Servicio | Uso | Costo | Guía |
+|----------|-----|-------|------|
+| **Supabase** | PostgreSQL | Gratis (500MB) | [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) |
+| **Upstash** | Redis Cache | Gratis (10K cmds/día) | [docs/UPSTASH_SETUP.md](docs/UPSTASH_SETUP.md) |
+
+---
+
+## Paso 1: Configurar Supabase (Base de Datos)
+
+📘 **Guía completa:** [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md)
+
+1. Ve a: https://supabase.com/
+2. Regístrate y crea un **nuevo proyecto**
+3. Ve a **Settings** > **Database**
+4. Copia la **Connection Pooling URL** (recomendado):
+
+```
+postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?sslmode=require
+```
+
+---
+
+## Paso 2: Configurar Upstash (Redis Cache)
+
+📘 **Guía completa:** [docs/UPSTASH_SETUP.md](docs/UPSTASH_SETUP.md)
+
+1. Ve a: https://upstash.com/
+2. Regístrate y crea un **nuevo database**
+3. Copia la **Redis URL**:
+
+```
+redis://default:[PASSWORD]@[DATABASE]-[ID].upstash.io:6379
+```
+
+---
+
+## Paso 3: Probar Conexiones
+
+Antes de hacer deploy, verifica que todo funcione:
+
+```bash
+# Instala dependencias (si no lo has hecho)
+npm install
+
+# Ejecuta el script de prueba
+DATABASE_URL="tu-url-supabase" REDIS_URL="tu-url-upstash" node scripts/test-connections.js
+```
+
+Salida esperada:
+```
+✅ Conexión exitosa a Supabase!
+✅ Conexión exitosa a Upstash!
+🎉 Todas las conexiones funcionan correctamente!
+```
+
+---
+
+## Paso 4: Preparación Local
 
 ```bash
 # Clona el repositorio y cambia a la rama hostinger-deploy
@@ -45,44 +109,7 @@ npx prisma generate
 
 ---
 
-## Paso 2: Configurar Base de Datos en Hostinger
-
-### Opción A: PostgreSQL de Hostinger
-
-1. En el panel de Hostinger, ve a **Databases** > **PostgreSQL**
-2. Crea una nueva base de datos
-3. Copia la cadena de conexión
-
-```bash
-# Formato:
-postgresql://usuario:password@host:puerto/nombre_db?schema=public
-```
-
-### Opción B: Supabase (Gratis)
-
-1. Regístrate en https://supabase.com/
-2. Crea un proyecto nuevo
-3. Ve a Settings > Database
-4. Copia la Connection String
-
----
-
-## Paso 3: Configurar Redis (Obligatorio para caché)
-
-### Usar Upstash (Gratis hasta 10K comandos/día)
-
-1. Ve a https://upstash.com/
-2. Crea una cuenta gratuita
-3. Crea un nuevo database Redis
-4. Copia la REST API URL
-
-```
-Formato: redis://default:password@tu-host.upstash.io:6379
-```
-
----
-
-## Paso 4: Configurar Variables de Entorno en Hostinger
+## Paso 5: Configurar Variables de Entorno en Hostinger
 
 En el panel de Hostinger, ve a tu proyecto Node.js y configura las variables:
 
@@ -105,7 +132,7 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 
 ---
 
-## Paso 5: Ejecutar Migraciones de Base de Datos
+## Paso 6: Ejecutar Migraciones de Base de Datos
 
 ```bash
 # Desde tu terminal local, con las credenciales de producción
@@ -114,7 +141,7 @@ DATABASE_URL="postgresql://..." npx prisma migrate deploy
 
 ---
 
-## Paso 6: Deploy en Hostinger
+## Paso 7: Deploy en Hostinger
 
 ### Método 1: Importar desde GitHub (Recomendado)
 
@@ -152,7 +179,7 @@ zip -r nomadas-hostinger.zip \
 
 ---
 
-## Paso 7: Post-Deployment
+## Paso 8: Post-Deployment
 
 1. **Verifica que la app esté corriendo:**
    ```
@@ -225,14 +252,14 @@ Las siguientes características están deshabilitadas en esta rama:
 
 ---
 
-## Costos Estimados (Hostinger)
+## Costos Estimados (Hostinger + Servicios Gratuitos)
 
 | Servicio | Costo Mensual |
 |----------|---------------|
 | Hostinger Cloud | ~\$10-15/mes |
-| PostgreSQL (Hostinger) | ~\$5/mes |
-| Upstash Redis | Gratis (hasta 10K cmds/día) |
-| **Total** | **~\$15-20/mes** |
+| Supabase PostgreSQL | Gratis (500MB) |
+| Upstash Redis | Gratis (10K cmds/día) |
+| **Total** | **~\$10-15/mes** |
 
 ---
 
