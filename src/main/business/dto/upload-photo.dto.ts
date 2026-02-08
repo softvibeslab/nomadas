@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsMimeType, MaxLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsIn, MaxLength } from 'class-validator';
 
 export class UploadPhotoDto {
   @IsString()
@@ -8,7 +8,7 @@ export class UploadPhotoDto {
 
   @IsString()
   @IsNotEmpty()
-  @IsMimeType(['image/jpeg', 'image/png', 'image/webp'])
+  @IsIn(['image/jpeg', 'image/png', 'image/webp'])
   contentType: string;
 }
 

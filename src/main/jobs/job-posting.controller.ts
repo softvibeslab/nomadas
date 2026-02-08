@@ -12,13 +12,13 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { JobStatus } from '@prisma/client';
 import { JobPostingService } from './job-posting.service';
 import {
   CreateJobPostingDto,
   UpdateJobPostingDto,
   ChangeJobStatusDto,
   SearchJobsDto,
-  JobStatus,
 } from './dto';
 import { JwtAuthGuard } from '../identity/guards/jwt-auth.guard';
 import { User } from '../identity/decorators/user.decorator';

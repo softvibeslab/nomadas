@@ -1,13 +1,12 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../shared/infrastructure/database/prisma.service';
 import { OpenSearchService } from '../../shared/infrastructure/search/opensearch.service';
+import { JobStatus, BusinessProfile } from '@prisma/client';
 import {
   CreateJobPostingDto,
   UpdateJobPostingDto,
   ChangeJobStatusDto,
-  JobStatus,
 } from './dto';
-import { BusinessProfile } from '@prisma/client';
 
 /**
  * Job Posting Service

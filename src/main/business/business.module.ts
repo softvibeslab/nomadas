@@ -8,7 +8,7 @@ import { BusinessProfileService } from './services/business-profile.service';
 import { PhotoUploadService } from './services/photo-upload.service';
 import { GeocodingService } from './services/geocoding.service';
 import { VerificationService } from './services/verification.service';
-import { PrismaService } from '../database/prisma.service';
+import { PrismaService } from '../../shared/infrastructure/database/prisma.service';
 
 @Module({
   imports: [ConfigModule],

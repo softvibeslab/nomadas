@@ -31,7 +31,7 @@ export class AuthController {
   async login(
     @Body() loginDto: LoginDto,
     @User() user: any,
-    @Response({ passthrough: true }) response: Response,
+    @Res({ passthrough: true }) response: Response,
   ) {
     const result = await this.authService.login(loginDto);
 

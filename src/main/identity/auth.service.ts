@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../database/prisma.service';
+import { PrismaService } from '../../shared/infrastructure/database/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { PasswordValidator } from './utils/password-validator';
@@ -222,14 +222,14 @@ export class AuthService {
     };
   }
 
-  async logout(userId: string) {
+  async logout(userId: number) {
     await this.prisma.session.deleteMany({
       where: { userId },
     });
     return { message: 'Logged out successfully' };
   }
 
-  async getUserProfile(userId: string) {
+  async getUserProfile(userId: number) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { userRoles: { select: { role: true } } },

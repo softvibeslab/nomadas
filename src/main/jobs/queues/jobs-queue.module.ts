@@ -4,7 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JobExpiryProcessor } from './job-expiry.processor';
 import { SearchCleanupProcessor } from './search-cleanup.processor';
 import { SearchAlertsProcessor } from './search-alerts.processor';
-import { PrismaService } from '../../shared/infrastructure/database/prisma.service';
+import { PrismaService } from '../../../shared/infrastructure/database/prisma.service';
 import { SavedSearchService } from '../saved-search.service';
 
 /**

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../../database/prisma.service';
+import { PrismaService } from '../../../shared/infrastructure/database/prisma.service';
 import { CreateBusinessProfileDto, UpdateBusinessProfileDto } from '../dto';
 import { BusinessStatus, PrestigeLevel } from '@prisma/client';
 
