@@ -27,11 +27,9 @@ model User {
   // Relations
   workerProfile         WorkerProfile?
   businessProfiles      BusinessProfile[]
-  applications          Application[]
   reviewsAsReviewer     Review[]        @relation("Reviewer")
   reviewsAsReviewee     Review[]        @relation("Reviewee")
   threadParticipants    ThreadParticipant[]
-  messages              Message[]
   notificationPreferences NotificationPreference?
   legalAcceptances      LegalAcceptance[]
   auditLogs             AuditLog[]
@@ -87,7 +85,7 @@ model WorkerProfile {
   savedJobs       SavedJob[]
   savedSearches   SavedSearch[]
 
-  @@index([latitude, longitude], type: Gin)
+  @@index([latitude, longitude])
   @@map("worker_profiles")
 }
 
@@ -122,7 +120,7 @@ model BusinessProfile {
 
   // Reputation
   prestigeLevel    PrestigeLevel @default(BRONZE) @map("prestige_level")
-  averageRating   Float    @default(0) @map("average_rating") @db.Decimal(3, 2)
+  averageRating   Decimal  @default(0) @map("average_rating") @db.Decimal(3, 2)
   totalReviews    Int      @default(0) @map("total_reviews")
   hasGoodEmployerBadge Boolean @default(false) @map("has_good_employer_badge")
 
@@ -138,7 +136,6 @@ model BusinessProfile {
   // Relations
   user                User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
   jobPostings         JobPosting[]
-  messages            Message[]
   photos              BusinessPhoto[]
   verificationDocuments BusinessVerificationDocument[]
   changeHistory       BusinessProfileChange[]
@@ -645,23 +642,6 @@ model AgreementVersion {
   @@index([agreementId])
   @@map("agreement_versions")
 }
-  id             Int       @id @default(autoincrement())
-  applicationId  Int       @unique @map("application_id")
-  startDate      DateTime  @map("start_date")
-  endDate        DateTime  @map("end_date")
-  compensation   Int       // EUR total
-  accommodation  String?   @db.Text
-  meals          String?   @db.Text
-  workHours      String?   @map("work_hours") // e.g., "40h/week"
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
-
-  // Relations
-  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  reviews     Review[]
-
-  @@map("work_agreements")
-}
 
 // ========================================
 // 4. MESSAGING CONTEXT
@@ -789,7 +769,7 @@ model MessageNew {
   @@index([conversationId, createdAt(sort: Desc)])
   @@index([senderId])
   @@index([conversationId, readAt])
-  @@fulltext([searchText])
+  @@index([searchText])
   @@map("messages_new")
 }
 
@@ -809,8 +789,8 @@ model MessageImage {
   thumbnailUrl      String?       @map("thumbnail_url")
   previewUrl        String?       @map("preview_url")
 
-  // Auto-deletion (GDPR per NFR-MSG-SEC-006)
-  deleteAfter       DateTime      @default(now() + interval '90 days') @map("delete_after")
+  // Auto-deletion (GDPR per NFR-MSG-SEC-006) - 90 days from now
+  deleteAfter       DateTime      @default(now()) @map("delete_after")
 
   // Timestamps
   createdAt         DateTime      @default(now()) @map("created_at")
@@ -864,7 +844,7 @@ model Review {
   // Moderation (SPEC-REV-001)
   flagCount       Int       @default(0) @map("flag_count")
   flagReasons     Json?     // [{category: "OFFENSIVE", comment: "..."}]
-  moderationStatus ModerationStatus? @default(null) @map("moderation_status")
+  moderationStatus ModerationStatus? @map("moderation_status")
 
   // Audit trail (SPEC-REV-001)
   auditLog        Json?     @map("audit_log") // All changes tracked
@@ -908,7 +888,7 @@ model PrestigeLevelHistory {
   oldLevel         PrestigeLevel?
   newLevel         PrestigeLevel @map("new_level")
   completedJobsAtTime Int   @map("completed_jobs_at_time")
-  ratingAtTime     Float    @map("rating_at_time") @db.Decimal(3, 2)
+  ratingAtTime     Decimal  @map("rating_at_time") @db.Decimal(3, 2)
   changedAt        DateTime @default(now()) @map("changed_at")
 
   @@index([userId])
